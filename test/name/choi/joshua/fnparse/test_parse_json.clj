@@ -24,8 +24,8 @@
   (is (= (j/unicode-char-sequence (make-state "u11A3a\"]" 3 4))
          [\u11A3 (make-state (seq "a\"]") 8 4)]))
   (is (thrown-with-msg? Exception
-        #"JSON error at line 4, column 7: hexadecimal digit expected where \"T\" is"
-        (j/unicode-char-sequence (make-state "u11ATa\"]" 3 4)))))
+        #"JSON error at line 4, column 7: hexadecimal digit expected"
+        (j/unicode-char-sequence (make-state "u11AQa\"]" 3 4)))))
 
 (deftest escape-sequence
   (is (= (j/escape-sequence (make-state "\\\\a\"]" 3 4))

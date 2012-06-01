@@ -1,5 +1,6 @@
 (ns name.choi.joshua.fnparse.json
-  (:use name.choi.joshua.fnparse clojure.contrib.error-kit))
+  (:use name.choi.joshua.fnparse )
+  (:use [slingshot.slingshot :only [throw+]]))
 
 ;; These are some functions that the rules will use. A lot of these are
 ;; optional.
@@ -47,15 +48,15 @@
 ;; near complete, but rather it's to show examples of how to implement
 ;; errors.
 
-(deferror parse-error [] [state message message-args]
-  {:msg (str (format "JSON error at line %s, column %s: "
-               (:line state) (:column state))
-             (apply format message message-args))
-   :unhandled (throw-msg Exception)})
+(defn parse-error [state message message-args]
+  (throw+ {:msg
+           (str
+            (format "JSON error at line %s, column %s: " (:line state) (:column state))
+            (apply format message message-args))}))
 
 (defn- expectation-error-fn [expectation]
   (fn [remainder state]
-    (raise parse-error state "%s expected where \"%s\" is"
+    (parse-error state "%s expected where \"%s\" is"
       [expectation (or (first remainder) "the end of the file")])))
 
 ;; And here are where this parser's rules are defined.
@@ -229,9 +230,9 @@
   (binding [*remainder-accessor* remainder-a] ; this is completely
                                               ; optional
     (rule-match text
-      #(raise parse-error % "invalid document \"%s\""
+      #(parse-error % "invalid document \"%s\""
          (apply-str (remainder-a %)))
-      #(raise parse-error %2 "leftover data after a valid node \"%s\""
+      #(parse-error %2 "leftover data after a valid node \"%s\""
          (apply-str (remainder-a %2)))
       (struct state-s tokens 0 0))))
 ; The call to rule-match above is equivalent to the stuff below:
